@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucigrama de Derecho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .cell-input {
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-blue-50/40 to-sky-100/50 text-slate-800 min-h-screen flex flex-col items-center py-10 px-4">
+
+    <div class="max-w-7xl w-full bg-white rounded-2xl shadow-xl p-6 sm:p-10 border border-blue-200/60">
+
+        <header class="text-center mb-10 border-b border-blue-100 pb-6">
+            <div class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-3">
+                Taller de Legislación Informática
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-blue-950 mb-2">Crucigrama de Derecho</h1>
+            <p class="text-slate-600 text-sm sm:text-base max-w-2xl mx-auto">
+                Resuelve el crucigrama interactivo utilizando los conceptos jurídicos fundamentales proporcionados en las pistas.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+            <div class="lg:col-span-7 flex flex-col items-center">
+                <div class="overflow-x-auto w-full flex justify-center p-4 bg-blue-50/30 rounded-2xl border border-blue-200/80 shadow-inner">
+                    <div id="crossword-grid" class="grid grid-cols-[repeat(20,minmax(0,1fr))] gap-1"></div>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-4 mt-6 w-full">
+                    <button id="check-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md shadow-blue-200 transition-all duration-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        Verificar Respuestas
+                    </button>
+                    <button id="reset-btn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        Reiniciar
+                    </button>
+                </div>
+
+                <div id="message-box" class="mt-4 text-center font-bold text-sm min-h-[2rem]"></div>
+            </div>
+
+            <div class="lg:col-span-5 grid grid-cols-1 gap-6 bg-blue-50/40 p-6 rounded-2xl border border-blue-200/80">
+                <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
+                    <h2 class="text-base font-bold text-blue-900 mb-3 border-b border-blue-50 pb-2 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> Horizontales
+                    </h2>
+                    <div id="horizontal-clues" class="space-y-2.5 text-xs sm:text-sm text-slate-700"></div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm">
+                    <h2 class="text-base font-bold text-sky-900 mb-3 border-b border-blue-50 pb-2 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sky-600"></span> Verticales
+                    </h2>
+                    <div id="vertical-clues" class="space-y-2.5 text-xs sm:text-sm text-slate-700"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const wordsData = [
+            { id: 1, word: "LEY", hint: "Es una norma jurídica obligatoria creada por la autoridad competente.", row: 15, col: 19, dir: "V", num: 1 },
+            { id: 2, word: "ARTICULO", hint: "Cada una de las partes numeradas en que se divide una ley, código o reglamento.", row: 2, col: 2, dir: "V", num: 2 },
+            { id: 3, word: "NORMA", hint: "Regla que establece cómo deben comportarse las personas en determinadas situaciones.", row: 9, col: 18, dir: "V", num: 3 },
+            { id: 4, word: "DERECHOPUBLICO", hint: "Regula las relaciones entre el Estado y los particulares, así como su organización.", row: 10, col: 5, dir: "H", num: 4 },
+            { id: 5, word: "DERECHOPRIVADO", hint: "Regula las relaciones jurídicas entre particulares que actúan en condiciones de igualdad.", row: 3, col: 0, dir: "H", num: 5 },
+            { id: 6, word: "DERECHOCIVIL", hint: "Regula aspectos de la vida de las personas, como personalidad, bienes y contratos.", row: 15, col: 8, dir: "H", num: 6 },
+            { id: 7, word: "FUENTEREAL", hint: "Factores sociales, económicos, políticos, culturales e históricos que influyen en normas.", row: 5, col: 6, dir: "V", num: 7 },
+            { id: 8, word: "FUENTEFORMAL", hint: "Procedimientos reconocidos jurídicamente mediante los cuales se crean las normas.", row: 7, col: 1, dir: "H", num: 8 },
+            { id: 9, word: "FUENTEHISTORICA", hint: "Documentos, textos, códigos y registros del pasado que permiten conocer el derecho antiguo.", row: 3, col: 16, dir: "V", num: 9 },
+            { id: 10, word: "NORMAMORAL", hint: "Regla de conducta que guía a distinguir entre lo bueno y lo malo según valores.", row: 13, col: 2, dir: "H", num: 10 }
+        ];
+
+        const GRID_SIZE = 20;
+        const gridElement = document.getElementById('crossword-grid');
+        const horizontalCluesContainer = document.getElementById('horizontal-clues');
+        const verticalCluesContainer = document.getElementById('vertical-clues');
+        const checkBtn = document.getElementById('check-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const messageBox = document.getElementById('message-box');
+
+        let cellMatrix = {};
+
+        function initCrossword() {
+            gridElement.innerHTML = '';
+            horizontalCluesContainer.innerHTML = '';
+            verticalCluesContainer.innerHTML = '';
+            cellMatrix = {};
+
+            let activeCells = {};
+            let cellNumbers = {};
+
+            wordsData.forEach(item => {
+                let keyStart = `${item.row},${item.col}`;
+                if (!cellNumbers[keyStart]) {
+                    cellNumbers[keyStart] = item.num;
+                }
+                let r = item.row;
+                let c = item.col;
+                for (let i = 0; i < item.word.length; i++) {
+                    let key = `${r},${c}`;
+                    activeCells[key] = true;
+                    if (item.dir === 'H') c++;
+                    else r++;
+                }
+            });
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    let key = `${r},${c}`;
+                    let cellDiv = document.createElement('div');
+                    cellDiv.className = "w-7 h-7 sm:w-9 sm:h-9 relative";
+
+                    if (activeCells[key]) {
+                        let input = document.createElement('input');
+                        input.type = 'text';
+                        input.maxLength = 1;
+                        input.className = "w-full h-full bg-white border-2 border-blue-200 rounded-md text-slate-900 cell-input focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-blue-50/40 transition-all";
+                        input.dataset.row = r;
+                        input.dataset.col = c;
+                        
+                        wordsData.forEach(item => {
+                            let ir = item.row;
+                            let ic = item.col;
+                            for (let i = 0; i < item.word.length; i++) {
+                                if (ir === r && ic === c) {
+                                    input.dataset.letter = item.word[i];
+                                }
+                                if (item.dir === 'H') ic++;
+                                else ir++;
+                            }
+                        });
+
+                        input.addEventListener('input', (e) => {
+                            e.target.value = e.target.value.toUpperCase();
+                            if (e.target.value && e.target.value.match(/[A-ZÁÉÍÓÚÑ]/)) {
+                                moveNext(r, c);
+                            }
+                        });
+
+                        cellDiv.appendChild(input);
+                        cellMatrix[key] = input;
+
+                        if (cellNumbers[key]) {
+                            let numSpan = document.createElement('span');
+                            numSpan.className = "absolute top-0.5 left-1 text-[9px] sm:text-[10px] text-blue-700 font-extrabold pointer-events-none";
+                            numSpan.innerText = cellNumbers[key];
+                            cellDiv.appendChild(numSpan);
+                        }
+                    } else {
+                        cellDiv.className += " bg-blue-100/30 rounded-md";
+                    }
+                    gridElement.appendChild(cellDiv);
+                }
+            }
+
+            let addedClues = new Set();
+            wordsData.forEach(item => {
+                let clueKey = `${item.num}-${item.dir}`;
+                if (!addedClues.has(clueKey)) {
+                    addedClues.add(clueKey);
+                    let clueP = document.createElement('p');
+                    clueP.className = "leading-relaxed flex items-start gap-1.5";
+                    clueP.innerHTML = `<span class="font-extrabold text-blue-700 min-w-[1.2rem]">${item.num}.</span> <span>${item.hint}</span>`;
+                    
+                    if (item.dir === 'H') {
+                        horizontalCluesContainer.appendChild(clueP);
+                    } else {
+                        verticalCluesContainer.appendChild(clueP);
+                    }
+                }
+            });
+        }
+
+        function moveNext(r, c) {
+            let nextInput = cellMatrix[`${r},${c+1}`] || cellMatrix[`${r+1},${c}`];
+            if (nextInput) nextInput.focus();
+        }
+
+        checkBtn.addEventListener('click', () => {
+            let allCorrect = true;
+            let filledCount = 0;
+
+            Object.keys(cellMatrix).forEach(key => {
+                let input = cellMatrix[key];
+                let val = input.value.trim();
+                if (val !== "") filledCount++;
+                if (val === input.dataset.letter) {
+                    input.classList.remove('bg-red-50', 'border-red-400');
+                    input.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900');
+                } else {
+                    allCorrect = false;
+                    if (val !== "") {
+                        input.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900');
+                        input.classList.add('bg-red-50', 'border-red-400', 'text-red-900');
+                    }
+                }
+            });
+
+            if (allCorrect && filledCount > 0) {
+                messageBox.className = "mt-4 text-center font-bold text-emerald-600 bg-emerald-50 p-3 rounded-xl border border-emerald-200";
+                messageBox.innerText = "¡Excelente trabajo! Has completado el crucigrama correctamente.";
+            } else {
+                messageBox.className = "mt-4 text-center font-bold text-amber-600 bg-amber-50 p-3 rounded-xl border border-amber-200";
+                messageBox.innerText = "Hay algunos errores o casillas vacías. ¡Revisa tus respuestas e inténtalo de nuevo!";
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            Object.keys(cellMatrix).forEach(key => {
+                let input = cellMatrix[key];
+                input.value = "";
+                input.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'bg-red-50', 'border-red-400', 'text-red-900');
+            });
+            messageBox.innerText = "";
+            messageBox.className = "mt-4 text-center font-bold text-sm min-h-[2rem]";
+        });
+
+        initCrossword();
+    </script>
+</body>
+</html>
