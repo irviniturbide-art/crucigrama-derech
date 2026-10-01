@@ -1,1 +1,1 @@
-# crucigrama-derecho
+# crucigrama-derech
